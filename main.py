@@ -9,6 +9,7 @@ from auth import (
     hash_password,
     verify_password,
     create_access_token,
+    get_current_user
 )
 
 app = FastAPI()
@@ -67,10 +68,25 @@ def login(# why no async?
         )
 
     access_token = create_access_token(
-        data={"sub": user.id}
+        data={"sub": str(user.id)}    
     )
 
     return {
         "access_token": access_token,
         "token_type": "bearer",
+    }
+
+
+
+# testing
+
+@app.get("/me")
+def read_me(
+    current_user: models.User = Depends(get_current_user)
+):
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "role": current_user.role,
+        "created_at": current_user.created_at,
     }

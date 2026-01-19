@@ -19,7 +19,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 # ---------------- DB DEP ----------------
@@ -71,7 +71,8 @@ def get_current_user(
         user_id: int | None = payload.get("sub")
         if user_id is None:
             raise credentials_exception
-    except JWTError:
+    except JWTError as e:
+        print("JWT DECODE ERROR:", str(e))
         raise credentials_exception
 
     user = db.query(models.User).filter(models.User.id == user_id).first()
