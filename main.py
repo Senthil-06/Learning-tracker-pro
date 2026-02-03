@@ -4,6 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from routers.learning_items import router as learning_router
 from routers.analytics import router as analytics_router
 from routers.profile import router as profile_router
+from fastapi.middleware.cors import CORSMiddleware
 
 
 import models
@@ -20,6 +21,13 @@ app = FastAPI()
 app.include_router(learning_router)
 app.include_router(analytics_router)
 app.include_router(profile_router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # ---------------- REGISTER ----------------
