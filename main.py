@@ -1,6 +1,10 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
+from routers.learning_items import router as learning_router
+from routers.analytics import router as analytics_router
+from routers.profile import router as profile_router
+
 
 import models
 import schemas
@@ -13,6 +17,9 @@ from auth import (
 )
 
 app = FastAPI()
+app.include_router(learning_router)
+app.include_router(analytics_router)
+app.include_router(profile_router)
 
 
 # ---------------- REGISTER ----------------
@@ -21,11 +28,11 @@ app = FastAPI()
 def register_user(  
     payload: schemas.UserCreate,
     db: Session = Depends(get_db),
-): #didn't bother writing responese_model? good practice?
+):
     existing = (
-        db.query(models.User)  #models.User resembles a table but it probably is a ORM model
+        db.query(models.User) 
         .filter(models.User.email == payload.email)
-        .first()  #if only one record is returned, why .first()?
+        .first()
     )
 
     if existing:
@@ -49,7 +56,7 @@ def register_user(
 # ---------------- LOGIN ----------------
 
 @app.post("/auth/login", response_model=schemas.Token)
-def login(# why no async?
+def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):

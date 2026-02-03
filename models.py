@@ -40,7 +40,7 @@ class LearningItem(Base):
     __tablename__ = "learning_items"
 
     id = Column(Integer, primary_key=True, index=True)
-    owner_id = Column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False, index=True)
+    owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     title = Column(String(255), nullable=False)
     category = Column(Enum(LearningCategory), nullable=False)
     difficulty = Column(Integer, nullable=False)
@@ -62,24 +62,13 @@ class LearningSession(Base):
     __tablename__ = "learning_sessions"
     
     id = Column(Integer, primary_key=True, index=True)
-    learning_item_id = Column(Integer, ForeignKey("learning_items.id", ondelete="RESTRICT"), nullable=False, index=True,)
+    learning_item_id = Column(Integer, ForeignKey("learning_items.id", ondelete="CASCADE"), nullable=False, index=True,)
     duration_minutes = Column(Integer, nullable=False)
     notes = Column(String(1000), nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     
     learning_item = relationship("LearningItem", back_populates="sessions")
 
-    __table_args__ = (CheckConstraint("duration_minutes > 0",name="positive_duration"),)
+    __table_args__ = (CheckConstraint("duration_minutes > 0",name="positive_duration"), CheckConstraint("duration_minutes BETWEEN 1 AND 720", name="upper_bound_duration"))
 
 
-
-
-class Milestone(Base):
-    __tablename__ = "milestones"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    learning_item_id = Column(Integer, ForeignKey("learning_items.id", ondelete="RESTRICT"), nullable=False, index=True)
-    title = Column(String(255), nullable=False)
-    completed_at = Column(DateTime(timezone=True), nullable=True)
-    
-    learning_item = relationship("LearningItem", back_populates="milestones")
