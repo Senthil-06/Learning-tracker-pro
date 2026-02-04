@@ -258,7 +258,7 @@ def get_learning_item(
         "sessions": sessions,
     }
 
-@router.get("/completed",respone_model=schemas.LearningItemRead)
+@router.get("/completed",response_model=schemas.LearningItemRead)
 def get_completed_items(
     db: Session = Depends(get_db),
     user: models.User = Depends(get_current_user),
