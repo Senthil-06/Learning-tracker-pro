@@ -50,8 +50,6 @@ class LearningItem(Base):
 
     owner = relationship("User", back_populates="learning_items")
     sessions = relationship("LearningSession",back_populates="learning_item", passive_deletes=True,)
-    milestones = relationship("Milestone",back_populates="learning_item",passive_deletes=True,)
-
     __table_args__ = (CheckConstraint("difficulty BETWEEN 1 AND 5",name="difficulty_range"),)
 
 
