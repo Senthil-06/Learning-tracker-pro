@@ -36,6 +36,8 @@ class LearningItemUpdate(BaseModel):
     category: LearningCategory | None = None
     difficulty: int | None = None
     status: LearningStatus | None = None
+    archive: bool = False
+    unarchive: bool = False  
 
 class SessionRead(BaseModel):
     id: int

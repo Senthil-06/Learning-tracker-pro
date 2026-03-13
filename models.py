@@ -11,6 +11,11 @@ class LearningCategory(enum.Enum):
     math = "math"
     devops = "devops"
     other = "other"
+    Acedemics = "Acedemics"
+    Skill_up = "Skill_up"
+    Responsibilities = "Responsibilities"
+    Hobbies = "Hobbies"
+    Miscellaneous = "Miscellaneous"
 
 
 class LearningStatus(enum.Enum):

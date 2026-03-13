@@ -46,6 +46,7 @@ def weekly_time(
     }
 
     result = []
+    start -= timedelta(days=start.weekday())    #makes sure cursor points to a monday (start of the week)
     cursor = start.date()
 
     for _ in range(weeks):

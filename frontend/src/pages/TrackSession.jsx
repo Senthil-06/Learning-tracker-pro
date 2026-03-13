@@ -18,10 +18,10 @@ export default function TrackSession() {
     // New Item State (Quick Create)
     const [isCreatingNew, setIsCreatingNew] = useState(false);
     const [newTitle, setNewTitle] = useState("");
-    const [newCategory, setNewCategory] = useState("Coding");
+    const [newCategory, setNewCategory] = useState("Hobbies");
     const [newDifficulty, setNewDifficulty] = useState("1");
 
-    const categories = ["Coding", "Languages", "Music", "Fitness", "Reading", "Other"];
+    const categories = [ "Hobbies", "Skill_up", "Responsibilities", "Acedemics", "Miscellaneous"];
 
     const fetchItems = async () => {
         try {
@@ -73,6 +73,7 @@ export default function TrackSession() {
         setSubmitting(true);
         setErrorMsg("");
         try {
+            console.log(newCategory);
             const res = await api.post("/learning-items", {
                 title: newTitle,
                 category: newCategory,
@@ -84,7 +85,14 @@ export default function TrackSession() {
             setNewTitle("");
             await fetchItems(); // Refresh the list
         } catch (err) {
-            setErrorMsg(err.response?.data?.detail || "Failed to create item");
+
+            console.log(err);
+            const detail = err.response?.data?.detail;
+setErrorMsg(
+    Array.isArray(detail)
+        ? detail.map(d => d.msg).join(", ")
+        : detail || "Failed to create item"
+);
         } finally {
             setSubmitting(false);
         }

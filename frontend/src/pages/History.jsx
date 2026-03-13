@@ -6,18 +6,16 @@ import { BookOpen, AlertCircle, CheckCircle2 } from "lucide-react";
 export default function History() {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState("ongoing"); // , completed, archived
 
     useEffect(() => {
         const fetchItems = async () => {
             setLoading(true);
             try {
-                let endpoint = "/learning-items/ongoing";
-                if (activeTab === "completed") endpoint = "/learning-items/completed";
-                if (activeTab === "archived") endpoint = "/learning-items/archived";
-
-                const res = await api.get(endpoint);
-                setItems(res.data);
+                const [completedItems, archivedItems] = await Promise.all([
+                    api.get("/learning-items/completed"),
+                    api.get("/learning-items/archived")
+                ])
+                setItems([...completedItems.data,...archivedItems.data]);
             } catch (err) {
                 console.error("Failed to fetch history", err);
             } finally {
@@ -25,7 +23,7 @@ export default function History() {
             }
         };
         fetchItems();
-    }, [activeTab]);
+    }, []);
 
     return (
         <div className="space-y-6">
@@ -34,41 +32,11 @@ export default function History() {
                 <p className="text-slate-500">Manage and review your study topics</p>
             </div>
 
-            <div className="flex border-b border-slate-200">
-                <button
-                    onClick={() => setActiveTab("ongoing")}
-                    className={`py-4 px-6 text-sm font-medium transition-colors border-b-2 -mb-px ${activeTab === "ongoing"
-                            ? "border-blue-600 text-blue-600"
-                            : "border-transparent text-slate-500 hover:text-slate-700"
-                        }`}
-                >
-                    Ongoing
-                </button>
-                <button
-                    onClick={() => setActiveTab("completed")}
-                    className={`py-4 px-6 text-sm font-medium transition-colors border-b-2 -mb-px ${activeTab === "completed"
-                            ? "border-blue-600 text-blue-600"
-                            : "border-transparent text-slate-500 hover:text-slate-700"
-                        }`}
-                >
-                    Completed
-                </button>
-                <button
-                    onClick={() => setActiveTab("archived")}
-                    className={`py-4 px-6 text-sm font-medium transition-colors border-b-2 -mb-px ${activeTab === "archived"
-                            ? "border-blue-600 text-blue-600"
-                            : "border-transparent text-slate-500 hover:text-slate-700"
-                        }`}
-                >
-                    Archived
-                </button>
-            </div>
-
             {loading ? (
                 <div className="p-8 text-center text-slate-500">Loading data...</div>
             ) : items.length === 0 ? (
                 <div className="bg-white p-8 rounded-xl border border-slate-100 text-center text-slate-500">
-                    No {activeTab} items found.
+                    No items found.
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -80,7 +48,7 @@ export default function History() {
                                 </div>
                             )}
                             <div className="flex items-center space-x-3 mb-4">
-                                <div className={`p-2 rounded-lg ${activeTab === 'ongoing' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-600'}`}>
+                                <div className={'p-2 rounded-lg bg-slate-100 text-slate-600'}>
                                     <BookOpen className="w-5 h-5" />
                                 </div>
                                 <div>

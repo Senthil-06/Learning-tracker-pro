@@ -7,7 +7,7 @@ import models
 import schemas
 from auth import get_current_user, get_db
 from fastapi import APIRouter
-
+from typing import List
 router = APIRouter(prefix="/learning-items",tags=["Learning"])
 
 
@@ -94,7 +94,38 @@ def get_ongoing_learning_items(
     items = query.limit(limit).all()
     return items
 
+@router.get("/completed",response_model=List[schemas.LearningItemRead])
+def get_completed_items(
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    items = (
+        db.query(models.LearningItem)
+        .filter(
+            models.LearningItem.owner_id == user.id,
+            models.LearningItem.status == models.LearningStatus.completed,
+            models.LearningItem.archived_at.is_(None),
+        )
+        .order_by(models.LearningItem.created_at.desc())
+        .all()
+    )
+    return items
 
+@router.get("/archived",response_model=List[schemas.LearningItemRead])
+def get_archived_items(
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    items = (
+        db.query(models.LearningItem)
+        .filter(
+            models.LearningItem.owner_id == user.id,
+            models.LearningItem.archived_at.isnot(None),
+        )
+        .order_by(models.LearningItem.archived_at.desc())
+        .all()
+    )
+    return items
 @router.post("/{id}/sessions", status_code=201)
 def log_session(
     id: int,
@@ -141,7 +172,7 @@ def post_learning_item(payload: schemas.LearningItemCreate, db: Session=Depends(
         title=payload.title,
         category=payload.category,
         difficulty=payload.difficulty,
-        status=models.LearningStatus.planned)  #does this line make any difference? default status is planned(mentioned in models.py), why enforece here?
+        status=models.LearningStatus.planned)
     db.add(item)
     db.commit()
     db.refresh(item)
@@ -149,71 +180,53 @@ def post_learning_item(payload: schemas.LearningItemCreate, db: Session=Depends(
     return {"id": item.id, "message":"item created successfully"}
 
 @router.patch("/{id}")
-def edit_learning_item(id :int, payload: schemas.LearningItemUpdate,db :Session=Depends(get_db), user: models.User =Depends(get_current_user)):
-    item=db.query(models.LearningItem).filter(models.LearningItem.id == id).first()
+def edit_learning_item(id: int, payload: schemas.LearningItemUpdate, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    item = db.query(models.LearningItem).filter(models.LearningItem.id == id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Learning item not found")
     if item.owner_id != user.id:
         raise HTTPException(status_code=403, detail="Not your item")
+
+    # --- Archived item: only unarchive is allowed ---
     if item.archived_at:
-        raise HTTPException(status_code=400, detail="Item is archived")
-    if item.status== models.LearningStatus.completed:
-        raise HTTPException(status_code=400,detail="cannot edit completed item")
-    
+        if payload.unarchive:
+            item.archived_at = None
+            db.commit()
+            return {"message": "Item unarchived"}
+        raise HTTPException(status_code=400, detail="Item is archived. Only unarchiving is allowed.")
+
+    # --- Archive request ---
+    if payload.archive:
+        item.archived_at = datetime.now(timezone.utc)
+        db.commit()
+        return {"message": "Item archived"}
+
+    # --- Completed items cannot be edited ---
+    if item.status == models.LearningStatus.completed:
+        raise HTTPException(status_code=400, detail="Cannot edit a completed item")
+
+    # --- Regular field updates ---
     if payload.title is not None:
         item.title = payload.title
-
     if payload.category is not None:
         item.category = payload.category
-
     if payload.difficulty is not None:
         item.difficulty = payload.difficulty
 
-    if payload.status is not None and payload.status != models.LearningStatus.completed:
-        item.status = payload.status
-
-    if payload.status == models.LearningStatus.completed:
-        has_session = (
-        db.query(models.LearningSession)
-        .filter(models.LearningSession.learning_item_id == item.id)
-        .first()
-        )
-        if not has_session:
-            raise HTTPException(
-                status_code=400,
-                detail="Cannot complete item without any sessions"
+    # --- Status update ---
+    if payload.status is not None:
+        if payload.status == models.LearningStatus.completed:
+            has_session = (
+                db.query(models.LearningSession)
+                .filter(models.LearningSession.learning_item_id == item.id)
+                .first()
             )
+            if not has_session:
+                raise HTTPException(status_code=400, detail="Cannot complete item without any sessions")
         item.status = payload.status
-        
 
     db.commit()
     return {"message": "Item updated"}
-
-@router.delete("/{id}")
-def archive_learning_item(
-    id: int,
-    db: Session = Depends(get_db),
-    user: models.User = Depends(get_current_user),
-):
-    item = (
-        db.query(models.LearningItem)
-        .filter(models.LearningItem.id == id)
-        .first()
-    )
-
-    if not item:
-        raise HTTPException(status_code=404, detail="Not found")
-
-    if item.owner_id != user.id:
-        raise HTTPException(status_code=403, detail="Not yours")
-
-    if item.archived_at is not None:
-        raise HTTPException(status_code=400, detail="Already archived")
-
-    item.archived_at = datetime.now(timezone.utc)
-    db.commit()
-
-    return {"message": "Item archived"}
 
 @router.get("/{id}",response_model=schemas.LearningItemDetail)
 def get_learning_item(
@@ -258,61 +271,5 @@ def get_learning_item(
         "sessions": sessions,
     }
 
-@router.get("/completed",response_model=schemas.LearningItemRead)
-def get_completed_items(
-    db: Session = Depends(get_db),
-    user: models.User = Depends(get_current_user),
-):
-    items = (
-        db.query(models.LearningItem)
-        .filter(
-            models.LearningItem.owner_id == user.id,
-            models.LearningItem.status == models.LearningStatus.completed,
-            models.LearningItem.archived_at.is_(None),
-        )
-        .order_by(models.LearningItem.created_at.desc())
-        .all()
-    )
-    return items
 
-@router.get("/archived",response_model=schemas.LearningItemRead)
-def get_archived_items(
-    db: Session = Depends(get_db),
-    user: models.User = Depends(get_current_user),
-):
-    items = (
-        db.query(models.LearningItem)
-        .filter(
-            models.LearningItem.owner_id == user.id,
-            models.LearningItem.archived_at.isnot(None),
-        )
-        .order_by(models.LearningItem.archived_at.desc())
-        .all()
-    )
-    return items
 
-@router.patch("{id}/unarchive")
-def unarchive_learning_item(
-    id: int,
-    db: Session = Depends(get_db),
-    user: models.User = Depends(get_current_user),
-):
-    item = (
-        db.query(models.LearningItem)
-        .filter(models.LearningItem.id == id)
-        .first()
-    )
-
-    if not item:
-        raise HTTPException(status_code=404, detail="Not found")
-
-    if item.owner_id != user.id:
-        raise HTTPException(status_code=403, detail="Not yours")
-
-    if item.archived_at is None:
-        raise HTTPException(status_code=400, detail="Item is not archived")
-
-    item.archived_at = None
-    db.commit()
-
-    return {"message": "Item unarchived"}
