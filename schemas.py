@@ -75,8 +75,8 @@ class DropoffResponse(BaseModel):
     count: int
     items: list[DropoffItem]
 
-class CategoryBreakdown(BaseModel):
-    category: LearningCategory
+class SubjectBreakdown(BaseModel):
+    subject : str
     total_minutes: int
 
 class LearningItemRead(BaseModel):

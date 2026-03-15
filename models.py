@@ -46,7 +46,7 @@ class LearningItem(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    title = Column(String(255), nullable=False)
+    title = Column(String(255), nullable=False, unique=True)
     category = Column(Enum(LearningCategory), nullable=False)
     difficulty = Column(Integer, nullable=False)
     status = Column(Enum(LearningStatus), default=LearningStatus.planned, nullable=False)

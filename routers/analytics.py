@@ -172,8 +172,8 @@ def drop(
     }
 
 @router.get(
-    "/category-breakdown",
-    response_model=list[schemas.CategoryBreakdown],
+    "/subject-breakdown",
+    response_model=list[schemas.SubjectBreakdown],
 )
 def category_breakdown(
     db: Session = Depends(get_db),
@@ -181,7 +181,7 @@ def category_breakdown(
 ):
     rows = (
         db.query(
-            models.LearningItem.category,
+            models.LearningItem.title.label("subject"),
             func.coalesce(
                 func.sum(models.LearningSession.duration_minutes), 0
             ).label("total_minutes"),
@@ -192,9 +192,8 @@ def category_breakdown(
         )
         .filter(
             models.LearningItem.owner_id == user.id,
-            models.LearningItem.archived_at.is_(None),
         )
-        .group_by(models.LearningItem.category)
+        .group_by(models.LearningItem.title)
         .all()
     )
 

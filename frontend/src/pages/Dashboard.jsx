@@ -52,7 +52,7 @@ export default function Dashboard() {
     const [weeklyData, setWeeklyData] = useState([]);
     const [streakData, setStreakData] = useState({ current_streak: 0, longest_streak: 0 });
     const [ongoingItems, setOngoingItems] = useState([]);
-    const [categories, setCategories] = useState([]);
+    const [subjects, setSubjects] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -62,13 +62,13 @@ export default function Dashboard() {
                     api.get("/analytics/weekly-time?weeks=8"),
                     api.get("/analytics/streak"),
                     api.get("/learning-items/ongoing?limit=5"),
-                    api.get("/analytics/category-breakdown")
+                    api.get("/analytics/subject-breakdown")
                 ]);
 
                 setWeeklyData(weeklyRes.data);
                 setStreakData(streakRes.data);
                 setOngoingItems(ongoingRes.data);
-                setCategories(catRes.data);
+                setSubjects(catRes.data);
             } catch (error) {
                 console.error("Failed to fetch dashboard data", error);
             } finally {
@@ -162,38 +162,36 @@ export default function Dashboard() {
                 {/* Subject Distribution */}
                 <Card>
                     <h3 className="font-semibold text-slate-900 mb-4">Subject Distribution</h3>
-                    <div className="h-64 flex items-center justify-center">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={categories}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={5}
-                                    dataKey="total_minutes"
-                                    nameKey="category"
-                                >
-                                    {categories.map((entry, index) => (
+                        <div className="h-64 flex items-center justify-center">
+                            <ResponsiveContainer width="60%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={subjects}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        dataKey="total_minutes"
+                                        nameKey="subject"
+                                    >
+                                    {subjects.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
-                                </Pie>
-                                <RechartsTooltip />
-                            </PieChart>
-                        </ResponsiveContainer>
+                                    </Pie>
+                                    <RechartsTooltip />
+                                 </PieChart>
+                            </ResponsiveContainer>
                         <div className="ml-4 space-y-2">
-                            {categories.map((entry, index) => (
-                                <div key={entry.category} className="flex items-center text-sm">
-                                    <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                                    <span className="text-slate-600">{entry.category}</span>
-                                    <span className="ml-2 font-medium text-slate-900">{Math.round(entry.total_minutes / 60)}h</span>
-                                </div>
-                            ))}
-                        </div>
+                        {subjects.map((entry, index) => (
+                            <div key={entry.subject} className="flex items-center text-sm">  {/* fix 3 */}
+                                <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                                <span className="text-slate-600">{entry.subject}</span>  {/* fix 2 */}
+                            </div>
+                        ))}
                     </div>
+                </div>
                 </Card>
-            </div>
+                </div>
 
             {/* Recent Activity / Ongoing Items */}
             <Card>

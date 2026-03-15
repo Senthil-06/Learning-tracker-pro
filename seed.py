@@ -8,7 +8,7 @@ db: Session = SessionLocal()
 
 # ----- USER -----
 user = models.User(
-    email="Chief@test.com",
+    email="Chieff@test.com",
     password_hash=hash_password("password123"),
 )
 
@@ -22,7 +22,7 @@ now = datetime.now(timezone.utc)
 items = [
     models.LearningItem(
         owner_id=user.id,
-        title="PostgreSQL indexing",
+        title="Operating Systems",
         category="Acedemics",
         difficulty=4,
         status="active",
@@ -30,7 +30,7 @@ items = [
     ),
     models.LearningItem(
         owner_id=user.id,
-        title="JWT authentication",
+        title="Maths",
         category="Acedemics",
         difficulty=3,
         status="active",
@@ -38,7 +38,7 @@ items = [
     ),
     models.LearningItem(
         owner_id=user.id,
-        title="Docker basics",
+        title="WTMA",
         category="Responsibilities",
         difficulty=2,
         status="planned",
@@ -46,7 +46,7 @@ items = [
     ),
     models.LearningItem(
         owner_id=user.id,
-        title="React hooks",
+        title="Software construction",
         category="Skill_up",
         difficulty=3,
         status="completed",
@@ -54,7 +54,7 @@ items = [
     ),
     models.LearningItem(
         owner_id=user.id,
-        title="System design notes",
+        title="Statistical Analysis",
         category="Acedemics",
         difficulty=5,
         status="paused",
@@ -62,7 +62,7 @@ items = [
     ),
     models.LearningItem(
         owner_id=user.id,
-        title="Competitive programming",
+        title="Soft Skills",
         category="Hobbies",
         difficulty=5,
         status="active",

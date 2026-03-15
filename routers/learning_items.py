@@ -167,6 +167,12 @@ def log_session(
 
 @router.post("")
 def post_learning_item(payload: schemas.LearningItemCreate, db: Session=Depends(get_db), user: models.User=Depends(get_current_user)):
+
+    #enforcing unique title at API level
+    existing_titles=db.query(models.LearningItem.title).filter(models.LearningItem.owner_id==user.id)
+    if payload.title in existing_titles:
+        raise HTTPException(status_code=400, detail="Subject already Exists")
+    
     item=models.LearningItem(
         owner_id=user.id,
         title=payload.title,
