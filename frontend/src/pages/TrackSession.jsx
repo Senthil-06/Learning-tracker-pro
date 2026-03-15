@@ -18,10 +18,9 @@ export default function TrackSession() {
     // New Item State (Quick Create)
     const [isCreatingNew, setIsCreatingNew] = useState(false);
     const [newTitle, setNewTitle] = useState("");
-    const [newCategory, setNewCategory] = useState("Hobbies");
+    const [subjectCode, setSubjectCode] = useState("");
     const [newDifficulty, setNewDifficulty] = useState("1");
 
-    const categories = [ "Hobbies", "Skill_up", "Responsibilities", "Acedemics", "Miscellaneous"];
 
     const fetchItems = async () => {
         try {
@@ -73,11 +72,10 @@ export default function TrackSession() {
         setSubmitting(true);
         setErrorMsg("");
         try {
-            console.log(newCategory);
             const res = await api.post("/learning-items", {
                 title: newTitle,
-                category: newCategory,
-                difficulty: parseInt(newDifficulty),
+                subject_code: subjectCode,
+                difficulty: newDifficulty,
             });
             // Select the newly created item
             setSelectedItemId(res.data.id.toString());
@@ -150,26 +148,27 @@ setErrorMsg(
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
-                                <select
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Subject Code</label>
+                                <input
+                                    type="text"
                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                    value={newCategory}
-                                    onChange={(e) => setNewCategory(e.target.value)}
-                                >
-                                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                                </select>
+                                    value={subjectCode}
+                                    onChange={(e) => setSubjectCode(e.target.value)}
+                                    placeholder="Enter subject code..."
+                                />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Difficulty (1-5)</label>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    max="5"
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Difficulty</label>
+                                <select
                                     required
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"
                                     value={newDifficulty}
                                     onChange={(e) => setNewDifficulty(e.target.value)}
-                                />
+                                >
+                                    <option value="Easy">Easy</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Hard">Hard</option>
+                                </select>
                             </div>
                         </div>
 
@@ -203,7 +202,7 @@ setErrorMsg(
                                 {items.length === 0 && <option value="" disabled>No active subjects. Create one first!</option>}
                                 {items.map((item) => (
                                     <option key={item.id} value={item.id}>
-                                        {item.title} ({item.category})
+                                        {item.title}
                                     </option>
                                 ))}
                             </select>

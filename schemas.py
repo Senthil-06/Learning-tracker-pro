@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime, date
-from models import LearningCategory, LearningStatus
+from models import LearningStatus, DifficultyLevel
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -14,7 +14,7 @@ class Token(BaseModel):
 class LearningItemOngoing(BaseModel):
     id: int
     title: str
-    category: LearningCategory
+    subject_code : str
     status: LearningStatus
     last_activity: datetime
     total_minutes: int
@@ -28,13 +28,13 @@ class SessionCreate(BaseModel):
 
 class LearningItemCreate(BaseModel):
     title: str
-    category: LearningCategory
-    difficulty: int
+    subject_code: str
+    difficulty: DifficultyLevel
 
 class LearningItemUpdate(BaseModel):
     title: str | None = None
-    category: LearningCategory | None = None
-    difficulty: int | None = None
+    subject_code: str | None = None
+    difficulty: DifficultyLevel | None = None
     status: LearningStatus | None = None
     archive: bool = False
     unarchive: bool = False  
@@ -47,8 +47,8 @@ class SessionRead(BaseModel):
 class LearningItemDetail(BaseModel):
     id: int
     title: str
-    category: LearningCategory
-    difficulty: int
+    subject_code: str
+    difficulty: DifficultyLevel
     status: LearningStatus
     created_at: datetime
     archived_at: datetime | None
@@ -82,8 +82,8 @@ class SubjectBreakdown(BaseModel):
 class LearningItemRead(BaseModel):
     id: int
     title: str
-    category: LearningCategory
-    difficulty: int
+    subject_code: str
+    difficulty: DifficultyLevel
     status: LearningStatus
     created_at: datetime
     archived_at: datetime | None

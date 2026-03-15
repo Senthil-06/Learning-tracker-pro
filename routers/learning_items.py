@@ -46,7 +46,7 @@ def get_ongoing_learning_items(
         db.query(
             models.LearningItem.id,
             models.LearningItem.title,
-            models.LearningItem.category,
+            models.LearningItem.subject_code,
             models.LearningItem.status,
             func.coalesce(
                 last_session_sq.c.last_session_at,
@@ -169,14 +169,14 @@ def log_session(
 def post_learning_item(payload: schemas.LearningItemCreate, db: Session=Depends(get_db), user: models.User=Depends(get_current_user)):
 
     #enforcing unique title at API level
-    existing_titles=db.query(models.LearningItem.title).filter(models.LearningItem.owner_id==user.id)
-    if payload.title in existing_titles:
+    existing=db.query(models.LearningItem).filter(models.LearningItem.owner_id==user.id,models.LearningItem.title==payload.title)
+    if existing:
         raise HTTPException(status_code=400, detail="Subject already Exists")
     
     item=models.LearningItem(
         owner_id=user.id,
         title=payload.title,
-        category=payload.category,
+        category=payload.subject_code,
         difficulty=payload.difficulty,
         status=models.LearningStatus.planned)
     db.add(item)
@@ -214,8 +214,8 @@ def edit_learning_item(id: int, payload: schemas.LearningItemUpdate, db: Session
     # --- Regular field updates ---
     if payload.title is not None:
         item.title = payload.title
-    if payload.category is not None:
-        item.category = payload.category
+    if payload.subject_code is not None:
+        item.subject_code = payload.subject_code
     if payload.difficulty is not None:
         item.difficulty = payload.difficulty
 
@@ -267,7 +267,7 @@ def get_learning_item(
     return {
         "id": item.id,
         "title": item.title,
-        "category": item.category,
+        "category": item.subject_code,
         "difficulty": item.difficulty,
         "status": item.status,
         "created_at": item.created_at,

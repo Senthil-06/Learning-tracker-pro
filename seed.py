@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 import models
+from models import DifficultyLevel
 from auth import hash_password
 from database import SessionLocal
 
@@ -8,7 +9,7 @@ db: Session = SessionLocal()
 
 # ----- USER -----
 user = models.User(
-    email="Chieff@test.com",
+    email="chief@test.com",
     password_hash=hash_password("password123"),
 )
 
@@ -23,48 +24,48 @@ items = [
     models.LearningItem(
         owner_id=user.id,
         title="Operating Systems",
-        category="Acedemics",
-        difficulty=4,
+        subject_code="CS23432",
+        difficulty=DifficultyLevel.Easy,
         status="active",
         created_at=now - timedelta(days=30),
     ),
     models.LearningItem(
         owner_id=user.id,
         title="Maths",
-        category="Acedemics",
-        difficulty=3,
+        subject_code="AI23231",
+        difficulty=DifficultyLevel.Easy,
         status="active",
         created_at=now - timedelta(days=25),
     ),
     models.LearningItem(
         owner_id=user.id,
         title="WTMA",
-        category="Responsibilities",
-        difficulty=2,
+        subject_code="AI23431",
+        difficulty=DifficultyLevel.Hard,
         status="planned",
         created_at=now - timedelta(days=5),
     ),
     models.LearningItem(
         owner_id=user.id,
         title="Software construction",
-        category="Skill_up",
-        difficulty=3,
+        subject_code="CS23433",
+        difficulty=DifficultyLevel.Medium,
         status="completed",
         created_at=now - timedelta(days=40),
     ),
     models.LearningItem(
         owner_id=user.id,
         title="Statistical Analysis",
-        category="Acedemics",
-        difficulty=5,
+        subject_code= "AD33333",
+        difficulty=DifficultyLevel.Medium,
         status="paused",
         created_at=now - timedelta(days=20),
     ),
     models.LearningItem(
         owner_id=user.id,
         title="Soft Skills",
-        category="Hobbies",
-        difficulty=5,
+        subject_code="CSCSCS",
+        difficulty=DifficultyLevel.Easy,
         status="active",
         archived_at=now - timedelta(days=10),
         created_at=now - timedelta(days=60),

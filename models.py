@@ -5,17 +5,6 @@ from sqlalchemy.orm import relationship
 import enum
 
 
-class LearningCategory(enum.Enum):
-    backend = "backend"
-    frontend = "frontend"
-    math = "math"
-    devops = "devops"
-    other = "other"
-    Acedemics = "Acedemics"
-    Skill_up = "Skill_up"
-    Responsibilities = "Responsibilities"
-    Hobbies = "Hobbies"
-    Miscellaneous = "Miscellaneous"
 
 
 class LearningStatus(enum.Enum):
@@ -23,6 +12,11 @@ class LearningStatus(enum.Enum):
     active = "active"
     paused = "paused"
     completed = "completed"
+
+class DifficultyLevel(enum.Enum):
+    Easy = "Easy"
+    Medium = "Medium"
+    Hard = "Hard"
 
 
 
@@ -47,15 +41,14 @@ class LearningItem(Base):
     id = Column(Integer, primary_key=True, index=True)
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     title = Column(String(255), nullable=False, unique=True)
-    category = Column(Enum(LearningCategory), nullable=False)
-    difficulty = Column(Integer, nullable=False)
+    subject_code = Column(String(10), nullable=False, unique=True)
+    difficulty = Column(Enum(DifficultyLevel), nullable=False)
     status = Column(Enum(LearningStatus), default=LearningStatus.planned, nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     archived_at = Column(DateTime(timezone=True), nullable=True)
 
     owner = relationship("User", back_populates="learning_items")
     sessions = relationship("LearningSession",back_populates="learning_item", passive_deletes=True,)
-    __table_args__ = (CheckConstraint("difficulty BETWEEN 1 AND 5",name="difficulty_range"),)
 
 
 
