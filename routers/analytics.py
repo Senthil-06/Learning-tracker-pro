@@ -119,7 +119,7 @@ def streak(
 
 @router.get("/dropoff", response_model = schemas.DropoffResponse)
 def drop(
-    days = 7,
+    days : int = 7,
     db: Session = Depends(get_db),
     user : models.User = Depends(get_current_user)
 ):

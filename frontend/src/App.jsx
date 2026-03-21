@@ -8,8 +8,7 @@ import { Link, useLocation } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import TrackSession from './pages/TrackSession';
-import History from './pages/History';
+import Subjects from './pages/Subjects';
 import Profile from './pages/Profile';
 
 const PrivateRoute = () => {
@@ -24,8 +23,7 @@ const Sidebar = () => {
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-    { icon: CheckCircle, label: 'Track Session', path: '/track' },
-    { icon: HistoryIcon, label: 'History', path: '/history' },
+    { icon: HistoryIcon, label: 'Subjects', path: '/subjects' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];
 
@@ -92,8 +90,7 @@ function App() {
           <Route element={<PrivateRoute />}>
             <Route element={<Layout />}>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/track" element={<TrackSession />} />
-              <Route path="/history" element={<History />} />
+              <Route path="/subjects" element={<Subjects />} />
               <Route path="/profile" element={<Profile />} />
             </Route>
           </Route>

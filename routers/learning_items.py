@@ -47,7 +47,9 @@ def get_ongoing_learning_items(
             models.LearningItem.id,
             models.LearningItem.title,
             models.LearningItem.subject_code,
+            models.LearningItem.difficulty,
             models.LearningItem.status,
+            models.LearningItem.created_at,
             func.coalesce(
                 last_session_sq.c.last_session_at,
                 models.LearningItem.created_at,
@@ -169,14 +171,14 @@ def log_session(
 def post_learning_item(payload: schemas.LearningItemCreate, db: Session=Depends(get_db), user: models.User=Depends(get_current_user)):
 
     #enforcing unique title at API level
-    existing=db.query(models.LearningItem).filter(models.LearningItem.owner_id==user.id,models.LearningItem.title==payload.title)
+    existing=db.query(models.LearningItem).filter(models.LearningItem.owner_id==user.id,models.LearningItem.title==payload.title).first()
     if existing:
         raise HTTPException(status_code=400, detail="Subject already Exists")
     
     item=models.LearningItem(
         owner_id=user.id,
         title=payload.title,
-        category=payload.subject_code,
+        subject_code=payload.subject_code,
         difficulty=payload.difficulty,
         status=models.LearningStatus.planned)
     db.add(item)
@@ -267,7 +269,7 @@ def get_learning_item(
     return {
         "id": item.id,
         "title": item.title,
-        "category": item.subject_code,
+        "subject_code": item.subject_code,
         "difficulty": item.difficulty,
         "status": item.status,
         "created_at": item.created_at,

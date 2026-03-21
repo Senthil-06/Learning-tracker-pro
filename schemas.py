@@ -15,7 +15,9 @@ class LearningItemOngoing(BaseModel):
     id: int
     title: str
     subject_code : str
+    difficulty: DifficultyLevel
     status: LearningStatus
+    created_at: datetime
     last_activity: datetime
     total_minutes: int
 
