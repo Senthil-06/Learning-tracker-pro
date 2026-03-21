@@ -94,7 +94,21 @@ def get_ongoing_learning_items(
         )
 
     items = query.limit(limit).all()
-    return items
+
+    item_ids = [row.id for row in items]
+    units = db.query(models.LearningUnit).filter(models.LearningUnit.learning_item_id.in_(item_ids)).all()
+    from collections import defaultdict
+    units_dict = defaultdict(list)
+    for u in units:
+        units_dict[u.learning_item_id].append(u)
+
+    result = []
+    for row in items:
+        row_data = dict(row._mapping)
+        row_data["units"] = units_dict[row.id]
+        result.append(row_data)
+
+    return result
 
 @router.get("/completed",response_model=List[schemas.LearningItemRead])
 def get_completed_items(
@@ -185,6 +199,19 @@ def post_learning_item(payload: schemas.LearningItemCreate, db: Session=Depends(
     db.commit()
     db.refresh(item)
 
+    # Automatically generate 5 units
+    units = [
+        models.LearningUnit(
+            learning_item_id=item.id,
+            unit_number=i,
+            name=f"Unit {i}",
+            two_marks_completed=False,
+            eleven_marks_completed=False
+        ) for i in range(1, 6)
+    ]
+    db.add_all(units)
+    db.commit()
+
     return {"id": item.id, "message":"item created successfully"}
 
 @router.patch("/{id}")
@@ -236,6 +263,32 @@ def edit_learning_item(id: int, payload: schemas.LearningItemUpdate, db: Session
     db.commit()
     return {"message": "Item updated"}
 
+@router.patch("/{id}/units/{unit_number}")
+def update_learning_unit(
+    id: int, 
+    unit_number: int, 
+    payload: schemas.LearningUnitUpdate, 
+    db: Session = Depends(get_db), 
+    user: models.User = Depends(get_current_user)
+):
+    item = db.query(models.LearningItem).filter(models.LearningItem.id == id, models.LearningItem.owner_id == user.id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    unit = db.query(models.LearningUnit).filter(models.LearningUnit.learning_item_id == id, models.LearningUnit.unit_number == unit_number).first()
+    if not unit:
+        raise HTTPException(status_code=404, detail="Unit not found")
+
+    if payload.name is not None:
+        unit.name = payload.name
+    if payload.two_marks_completed is not None:
+        unit.two_marks_completed = payload.two_marks_completed
+    if payload.eleven_marks_completed is not None:
+        unit.eleven_marks_completed = payload.eleven_marks_completed
+
+    db.commit()
+    return {"message": "Unit updated"}
+
 @router.get("/{id}",response_model=schemas.LearningItemDetail)
 def get_learning_item(
     id: int,
@@ -277,6 +330,7 @@ def get_learning_item(
         "total_minutes": total_minutes,
         "last_activity": last_activity,
         "sessions": sessions,
+        "units": item.units
     }
 
 

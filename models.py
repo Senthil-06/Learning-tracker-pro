@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String , DateTime, ForeignKey, Enum, CheckConstraint
+from sqlalchemy import Column, Integer, String , DateTime, ForeignKey, Enum, CheckConstraint, Boolean
 from database import Base
 from datetime import datetime, timezone
 from sqlalchemy.orm import relationship
@@ -48,7 +48,8 @@ class LearningItem(Base):
     archived_at = Column(DateTime(timezone=True), nullable=True)
 
     owner = relationship("User", back_populates="learning_items")
-    sessions = relationship("LearningSession",back_populates="learning_item", passive_deletes=True,)
+    sessions = relationship("LearningSession",back_populates="learning_item", passive_deletes=True)
+    units = relationship("LearningUnit", back_populates="learning_item", passive_deletes=True, order_by="LearningUnit.unit_number")
 
 
 
@@ -68,3 +69,14 @@ class LearningSession(Base):
     __table_args__ = (CheckConstraint("duration_minutes > 0",name="positive_duration"), CheckConstraint("duration_minutes BETWEEN 1 AND 720", name="upper_bound_duration"))
 
 
+class LearningUnit(Base):
+    __tablename__ = "learning_units"
+
+    id = Column(Integer, primary_key=True, index=True)
+    learning_item_id = Column(Integer, ForeignKey("learning_items.id", ondelete="CASCADE"), nullable=False, index=True)
+    unit_number = Column(Integer, nullable=False)
+    name = Column(String(255), nullable=True)
+    two_marks_completed = Column(Boolean, default=False, nullable=False)
+    eleven_marks_completed = Column(Boolean, default=False, nullable=False)
+
+    learning_item = relationship("LearningItem", back_populates="units")

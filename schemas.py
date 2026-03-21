@@ -11,6 +11,21 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+class LearningUnitUpdate(BaseModel):
+    name: str | None = None
+    two_marks_completed: bool | None = None
+    eleven_marks_completed: bool | None = None
+
+class LearningUnitRead(BaseModel):
+    id: int
+    unit_number: int
+    name: str | None
+    two_marks_completed: bool
+    eleven_marks_completed: bool
+
+    class Config:
+        from_attributes = True
+
 class LearningItemOngoing(BaseModel):
     id: int
     title: str
@@ -20,6 +35,7 @@ class LearningItemOngoing(BaseModel):
     created_at: datetime
     last_activity: datetime
     total_minutes: int
+    units: list[LearningUnitRead] = []
 
     class Config:
         from_attributes = True
@@ -57,6 +73,7 @@ class LearningItemDetail(BaseModel):
     total_minutes: int
     last_activity: datetime
     sessions: list[SessionRead]
+    units: list[LearningUnitRead] = []
 
 class WeeklyTime(BaseModel):
     week_start: date
