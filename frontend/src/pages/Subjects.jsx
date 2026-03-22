@@ -119,6 +119,7 @@ export default function Subjects() {
 
     const closeDrawer = () => {
         setIsDrawerOpen(false);
+        fetchItems();
         setTimeout(() => setSelectedItem(null), 300); // allow animation to finish
     };
 
@@ -164,8 +165,6 @@ export default function Subjects() {
                 alert("🎉 Congratulations! You have conquered the entire syllabus for this subject!");
                 closeDrawer();
                 fetchItems();
-            } else {
-                fetchItems(); // Silently sync real data
             }
         } catch (err) {
             alert(err.response?.data?.detail || "Failed to update unit progress");
@@ -222,7 +221,7 @@ export default function Subjects() {
             </div>
 
             <div className="flex justify-between items-center border-b border-slate-200">
-                <div className="flex overflow-x-auto w-full sm:w-auto">
+                <div className="flex w-full sm:w-auto">
                     {["ongoing", "completed"].map(tab => (
                         <button
                             key={tab}

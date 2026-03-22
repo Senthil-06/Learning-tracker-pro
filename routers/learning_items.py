@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from fastapi import Depends, HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
-
+from collections import defaultdict
 import models
 import schemas
 from auth import get_current_user, get_db
@@ -96,8 +96,7 @@ def get_ongoing_learning_items(
     items = query.limit(limit).all()
 
     item_ids = [row.id for row in items]
-    units = db.query(models.LearningUnit).filter(models.LearningUnit.learning_item_id.in_(item_ids)).all()
-    from collections import defaultdict
+    units = db.query(models.LearningUnit).filter(models.LearningUnit.learning_item_id.in_(item_ids)).order_by(models.LearningUnit.id).all()
     units_dict = defaultdict(list)
     for u in units:
         units_dict[u.learning_item_id].append(u)

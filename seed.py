@@ -75,6 +75,23 @@ items = [
 db.add_all(items)
 db.commit()
 
+# ----- UNITS -----
+all_units = []
+for item in items:
+    for i in range(1, 6):
+        all_units.append(
+            models.LearningUnit(
+                learning_item_id=item.id,
+                unit_number=i,
+                name=f"Unit {i}",
+                two_marks_completed=False,
+                eleven_marks_completed=False
+            )
+        )
+
+db.add_all(all_units)
+db.commit()
+
 # ----- SESSIONS -----
 sessions = [
     models.LearningSession(
