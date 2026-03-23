@@ -109,22 +109,77 @@ def get_ongoing_learning_items(
 
     return result
 
-@router.get("/completed",response_model=List[schemas.LearningItemRead])
+@router.get("/completed",response_model=list[schemas.LearningItemOngoing])
 def get_completed_items(
     db: Session = Depends(get_db),
     user: models.User = Depends(get_current_user),
 ):
-    items = (
-        db.query(models.LearningItem)
+    last_session_sq = (
+        select(
+            models.LearningSession.learning_item_id.label("item_id"),
+            func.max(models.LearningSession.created_at).label("last_session_at"),
+        )
+        .group_by(models.LearningSession.learning_item_id)
+        .subquery()
+    )
+
+    total_minutes_sq = (
+        select(
+            models.LearningSession.learning_item_id.label("item_id"),
+            func.sum(models.LearningSession.duration_minutes).label("total_minutes"),
+        )
+        .group_by(models.LearningSession.learning_item_id)
+        .subquery()
+    )
+
+    query = (
+        db.query(
+            models.LearningItem.id,
+            models.LearningItem.title,
+            models.LearningItem.subject_code,
+            models.LearningItem.difficulty,
+            models.LearningItem.status,
+            models.LearningItem.created_at,
+            func.coalesce(
+                last_session_sq.c.last_session_at,
+                models.LearningItem.created_at,
+            ).label("last_activity"),
+            func.coalesce(
+                total_minutes_sq.c.total_minutes,
+                0,
+            ).label("total_minutes"),
+        )
+        .outerjoin(
+            last_session_sq,
+            last_session_sq.c.item_id == models.LearningItem.id,
+        )
+        .outerjoin(
+            total_minutes_sq,
+            total_minutes_sq.c.item_id == models.LearningItem.id,
+        )
         .filter(
             models.LearningItem.owner_id == user.id,
-            models.LearningItem.status == models.LearningStatus.completed,
             models.LearningItem.archived_at.is_(None),
+            models.LearningItem.status == models.LearningStatus.completed,
         )
         .order_by(models.LearningItem.created_at.desc())
-        .all()
     )
-    return items
+
+    items = query.all()
+
+    item_ids = [row.id for row in items]
+    units = db.query(models.LearningUnit).filter(models.LearningUnit.learning_item_id.in_(item_ids)).order_by(models.LearningUnit.id).all()
+    units_dict = defaultdict(list)
+    for u in units:
+        units_dict[u.learning_item_id].append(u)
+
+    result = []
+    for row in items:
+        row_data = dict(row._mapping)
+        row_data["units"] = units_dict[row.id]
+        result.append(row_data)
+
+    return result
 
 @router.get("/archived",response_model=List[schemas.LearningItemRead])
 def get_archived_items(

@@ -1,16 +1,15 @@
 import { useState, useEffect } from "react";
 import api from "../api/client";
-import { format } from "date-fns";
-import { 
-    BookOpen, CheckCircle2, Edit2, Trash, RefreshCw, X, Check, Search, 
-    Plus, Play, Loader2, ChevronRight, Clock, Award
-} from "lucide-react";
+import { BookOpen, CheckCircle2, Edit2, Trash, RefreshCw, X, Check, Search, Plus, Play, Loader2, ChevronRight, Clock, Award } from "lucide-react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function Subjects() {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("ongoing"); // ongoing, completed (removed archived from UI)
     const [searchQuery, setSearchQuery] = useState("");
+    const navigate = useNavigate();
 
     // Quick Create State
     const [isCreatingNew, setIsCreatingNew] = useState(false);
@@ -51,9 +50,6 @@ export default function Subjects() {
                 const updatedItem = res.data.find(i => i.id === selectedItem.id);
                 if (updatedItem) {
                     setSelectedItem(updatedItem);
-                } else if (activeTab === "ongoing") {
-                    // It likely got completed or archived out of the current view
-                    closeDrawer();
                 }
             }
         } catch (err) {
@@ -64,6 +60,7 @@ export default function Subjects() {
     };
 
     useEffect(() => {
+        setItems([]); // Clear old items instantly to prevent UI flashes
         fetchItems();
         setSearchQuery("");
         setIsCreatingNew(false);
@@ -93,7 +90,7 @@ export default function Subjects() {
                 if (created) openDrawer(created);
             }, 300);
         } catch (err) {
-            alert(err.response?.data?.detail || "Failed to create subject. Ensure the title is unique.");
+            toast.error(err.response?.data?.detail || "Failed to create subject. Ensure the title is unique.");
         } finally {
             setFormSubmitting(false);
         }
@@ -105,8 +102,9 @@ export default function Subjects() {
             await api.patch(`/learning-items/${id}`, { archive: true });
             if (selectedItem?.id === id) closeDrawer();
             fetchItems();
+            toast.success("Subject deleted successfully.");
         } catch (err) {
-            alert(err.response?.data?.detail || "Failed to delete item");
+            toast.error(err.response?.data?.detail || "Failed to delete item");
         }
     };
 
@@ -119,7 +117,6 @@ export default function Subjects() {
 
     const closeDrawer = () => {
         setIsDrawerOpen(false);
-        fetchItems();
         setTimeout(() => setSelectedItem(null), 300); // allow animation to finish
     };
 
@@ -135,8 +132,9 @@ export default function Subjects() {
             setDuration("");
             setNotes("");
             fetchItems(); // Will silently refresh the drawer's item total_minutes
+            toast.success("Session logged!");
         } catch (err) {
-            alert(err.response?.data?.detail || "Failed to log session");
+            toast.error(err.response?.data?.detail || "Failed to log session");
         } finally {
             setLoggingSession(false);
         }
@@ -162,12 +160,13 @@ export default function Subjects() {
             const tickedCount = updatedUnits.reduce((acc, u) => acc + (u.two_marks_completed ? 1 : 0) + (u.eleven_marks_completed ? 1 : 0), 0);
             if (tickedCount === 10 && selectedItem.status !== "completed") {
                 await api.patch(`/learning-items/${selectedItem.id}`, { status: "completed" });
-                alert("🎉 Congratulations! You have conquered the entire syllabus for this subject!");
-                closeDrawer();
                 fetchItems();
+                navigate('/celebration', { state: { subjectName: selectedItem.title } });
+            } else {
+                fetchItems(); // Silently sync real data
             }
         } catch (err) {
-            alert(err.response?.data?.detail || "Failed to update unit progress");
+            toast.error(err.response?.data?.detail || "Failed to update unit progress");
             fetchItems(); // revert optimistic update
         }
     };
@@ -178,7 +177,7 @@ export default function Subjects() {
             await api.patch(`/learning-items/${selectedItem.id}/units/${unitNumber}`, { name: newName });
             fetchItems();
         } catch (err) {
-             alert(err.response?.data?.detail || "Failed to rename unit");
+             toast.error(err.response?.data?.detail || "Failed to rename unit");
         }
     };
 
@@ -271,7 +270,7 @@ export default function Subjects() {
                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                     value={newTitle}
                                     onChange={(e) => setNewTitle(e.target.value)}
-                                    placeholder="e.g. FastAPI Complete Guide"
+                                    placeholder="Subject title"
                                 />
                             </div>
                             <div>
@@ -283,7 +282,7 @@ export default function Subjects() {
                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 uppercase transition-colors"
                                     value={newSubjectCode}
                                     onChange={(e) => setNewSubjectCode(e.target.value.toUpperCase())}
-                                    placeholder="e.g. CS101"
+                                    placeholder="Subject code"
                                 />
                             </div>
                             <div>

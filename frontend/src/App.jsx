@@ -10,6 +10,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Subjects from './pages/Subjects';
 import Profile from './pages/Profile';
+import Celebration from './pages/Celebration';
+import { Toaster } from 'react-hot-toast';
 
 const PrivateRoute = () => {
   const { token, loading } = useAuth();
@@ -83,11 +85,34 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <Toaster 
+          position="bottom-right" 
+          toastOptions={{
+            style: {
+              background: '#1e293b',
+              color: '#fff',
+              borderRadius: '12px',
+            },
+            success: {
+              iconTheme: {
+                primary: '#10b981',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#fff',
+              },
+            },
+          }} 
+        />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
           <Route element={<PrivateRoute />}>
+            <Route path="/celebration" element={<Celebration />} />
             <Route element={<Layout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/subjects" element={<Subjects />} />
