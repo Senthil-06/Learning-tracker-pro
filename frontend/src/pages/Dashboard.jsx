@@ -115,9 +115,9 @@ export default function Dashboard() {
                         {dropoffData.items.map(item => (
                             <button
                                 key={item.id}
-                                onClick={() => navigate('/subjects')}
+                                onClick={() => navigate('/subjects', { state: { autoOpenSubjectId: item.id } })}
                                 className="flex items-center px-3 py-1.5 bg-white border border-amber-200 hover:border-amber-300 hover:bg-amber-100 rounded-lg text-sm font-medium text-amber-800 transition-colors shadow-sm active:scale-95"
-                                title="Click to view all subjects"
+                                title="Click to view this subject"
                             >
                                 <span className="truncate max-w-[150px]">{item.title}</span>
                                 <span className="ml-2 px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-xs whitespace-nowrap">

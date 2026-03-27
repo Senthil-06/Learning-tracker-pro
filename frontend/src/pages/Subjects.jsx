@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import api from "../api/client";
 import { BookOpen, CheckCircle2, Edit2, Trash, RefreshCw, X, Check, Search, Plus, Play, Loader2, ChevronRight, Clock, Award } from "lucide-react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Subjects() {
     const [items, setItems] = useState([]);
@@ -10,6 +10,7 @@ export default function Subjects() {
     const [activeTab, setActiveTab] = useState("ongoing"); // ongoing, completed (removed archived from UI)
     const [searchQuery, setSearchQuery] = useState("");
     const navigate = useNavigate();
+    const location = useLocation();
 
     // Quick Create State
     const [isCreatingNew, setIsCreatingNew] = useState(false);
@@ -65,6 +66,31 @@ export default function Subjects() {
         setSearchQuery("");
         setIsCreatingNew(false);
     }, [activeTab]);
+
+    // Auto-open drawer from Dashboard dropoff links
+    useEffect(() => {
+        const autoOpenId = location.state?.autoOpenSubjectId;
+        if (autoOpenId) {
+            // Strip the state from router history so it doesn't re-trigger on reload
+            navigate(location.pathname, { replace: true, state: {} });
+            
+            // Force the tab to "ongoing" since dropoffs are ongoing items
+            if (activeTab !== "ongoing") {
+                setActiveTab("ongoing");
+            }
+            
+            const fetchAndOpen = async () => {
+                try {
+                    // Fetch specifically by ID rather than relying on paginated List
+                    const res = await api.get(`/learning-items/${autoOpenId}`);
+                    openDrawer(res.data);
+                } catch (err) {
+                    toast.error("Failed to jump to the subject.");
+                }
+            };
+            fetchAndOpen();
+        }
+    }, [location.state, navigate, activeTab]);
 
     const handleCreateNewItem = async (e) => {
         e.preventDefault();
@@ -451,7 +477,7 @@ export default function Subjects() {
                                             required
                                             min="1"
                                             max="480"
-                                            className="flex-1 w-24 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                            className="flex-1 w-24 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
                                             value={duration}
                                             onChange={(e) => setDuration(e.target.value)}
                                             placeholder="Minutes..."

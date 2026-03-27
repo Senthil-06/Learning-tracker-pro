@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String , DateTime, ForeignKey, Enum, CheckConstraint, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, CheckConstraint, Boolean, UniqueConstraint
 from database import Base
 from datetime import datetime, timezone
 from sqlalchemy.orm import relationship
@@ -40,8 +40,8 @@ class LearningItem(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    title = Column(String(255), nullable=False, unique=True)
-    subject_code = Column(String(10), nullable=False, unique=True)
+    title = Column(String(255), nullable=False)
+    subject_code = Column(String(10), nullable=False)
     difficulty = Column(Enum(DifficultyLevel), nullable=False)
     status = Column(Enum(LearningStatus), default=LearningStatus.planned, nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
@@ -50,6 +50,10 @@ class LearningItem(Base):
     owner = relationship("User", back_populates="learning_items")
     sessions = relationship("LearningSession",back_populates="learning_item", passive_deletes=True)
     units = relationship("LearningUnit", back_populates="learning_item", passive_deletes=True, order_by="LearningUnit.unit_number")
+    __table_args__ = (
+        UniqueConstraint("owner_id", "title", name="uq_owner_title"),
+        UniqueConstraint("owner_id", "subject_code", name="uq_owner_subject_code"),
+    )
 
 
 
