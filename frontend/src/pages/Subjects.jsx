@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../api/client";
-import { BookOpen, CheckCircle2, Edit2, Trash, RefreshCw, X, Check, Search, Plus, Play, Loader2, ChevronRight, Clock, Award } from "lucide-react";
+import { BookOpen, CheckCircle2, Trash, X, Check, Search, Plus, Play, Loader2, ChevronRight, Clock, Award } from "lucide-react";
 import toast from "react-hot-toast";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -24,6 +24,9 @@ export default function Subjects() {
     // Multi-purpose Drawer State
     const [selectedItem, setSelectedItem] = useState(null); 
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    
+    // Deletion Modal State
+    const [itemToDelete, setItemToDelete] = useState(null);
 
     // Track Session Form inside Drawer
     const [duration, setDuration] = useState("");
@@ -122,13 +125,14 @@ export default function Subjects() {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this subject? This will hide it from the dashboard, but preserve your total study time analytics.")) return;
+    const executeDelete = async () => {
+        if (!itemToDelete) return;
         try {
-            await api.patch(`/learning-items/${id}`, { archive: true });
-            if (selectedItem?.id === id) closeDrawer();
+            await api.patch(`/learning-items/${itemToDelete.id}`, { archive: true });
+            if (selectedItem?.id === itemToDelete.id) closeDrawer();
             fetchItems();
             toast.success("Subject deleted successfully.");
+            setItemToDelete(null);
         } catch (err) {
             toast.error(err.response?.data?.detail || "Failed to delete item");
         }
@@ -197,7 +201,7 @@ export default function Subjects() {
         }
     };
 
-    const handleSaveUnitName = async (unitId, unitNumber, newName) => {
+    const handleSaveUnitName = async (unitNumber, newName) => {
         if (!selectedItem) return;
         try {
             await api.patch(`/learning-items/${selectedItem.id}/units/${unitNumber}`, { name: newName });
@@ -372,7 +376,7 @@ export default function Subjects() {
                                 {/* Quick Delete Button (Visible on hover) */}
                                 <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                     <button 
-                                        onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }} 
+                                        onClick={(e) => { e.stopPropagation(); setItemToDelete(item); }} 
                                         className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
                                         title="Delete Subject"
                                     >
@@ -520,6 +524,40 @@ export default function Subjects() {
                     </>
                 )}
             </div>
+
+            {/* --- DELETE CONFIRMATION MODAL --- */}
+            {itemToDelete && (
+                <div 
+                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] transition-opacity animate-in fade-in flex items-center justify-center p-4"
+                    onClick={() => setItemToDelete(null)}
+                >
+                    <div 
+                        className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-6 text-center sm:text-left">
+                            <h3 className="text-lg font-bold text-slate-900 mb-2">Delete "{itemToDelete.title}"?</h3>
+                            <p className="text-sm text-slate-500 leading-relaxed">
+                                This will permanently hide the subject from your dashboard and active lists. However, your total study time analytics and history will be safely preserved.
+                            </p>
+                        </div>
+                        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex flex-col-reverse sm:flex-row justify-end gap-3 rounded-b-xl">
+                            <button
+                                onClick={() => setItemToDelete(null)}
+                                className="px-4 py-2.5 sm:py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:text-slate-900 rounded-lg transition-colors sm:w-auto w-full"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={executeDelete}
+                                className="px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-sm sm:w-auto w-full active:scale-95"
+                            >
+                                Yes, Delete Subject
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
