@@ -18,9 +18,11 @@ import {
     Flame,
     TrendingUp,
     MoreHorizontal,
-    Play
+    Play,
+    AlertTriangle
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/client";
 import { cn } from "../lib/utils";
 import { format, subDays, startOfWeek, addDays } from "date-fns";
@@ -53,22 +55,26 @@ export default function Dashboard() {
     const [streakData, setStreakData] = useState({ current_streak: 0, longest_streak: 0 });
     const [ongoingItems, setOngoingItems] = useState([]);
     const [subjects, setSubjects] = useState([]);
+    const [dropoffData, setDropoffData] = useState({ count: 0, items: [] });
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [weeklyRes, streakRes, ongoingRes, catRes] = await Promise.all([
+                const [weeklyRes, streakRes, ongoingRes, catRes, dropoffRes] = await Promise.all([
                     api.get("/analytics/weekly-time?weeks=8"),
                     api.get("/analytics/streak"),
                     api.get("/learning-items/ongoing?limit=5"),
-                    api.get("/analytics/subject-breakdown")
+                    api.get("/analytics/subject-breakdown"),
+                    api.get("/analytics/dropoff?days=7")
                 ]);
 
                 setWeeklyData(weeklyRes.data);
                 setStreakData(streakRes.data);
                 setOngoingItems(ongoingRes.data);
                 setSubjects(catRes.data);
+                setDropoffData(dropoffRes.data);
             } catch (error) {
                 console.error("Failed to fetch dashboard data", error);
             } finally {
@@ -94,6 +100,34 @@ export default function Dashboard() {
                 <h2 className="text-2xl font-bold text-slate-900">Dashboard</h2>
                 <p className="text-slate-500">Track your learning progress and study habits</p>
             </div>
+
+            {/* Dropoff Warning Banner */}
+            {dropoffData?.count > 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 shadow-sm animate-in fade-in slide-in-from-top-2">
+                    <div className="flex items-center space-x-2 text-amber-800 mb-2">
+                        <AlertTriangle className="w-5 h-5" />
+                        <h3 className="font-semibold">Needs Attention</h3>
+                    </div>
+                    <p className="text-sm text-amber-700/80 mb-4">
+                        You have {dropoffData.count} subject{dropoffData.count === 1 ? '' : 's'} slipping away. Drop a short session today to keep your streak alive!
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                        {dropoffData.items.map(item => (
+                            <button
+                                key={item.id}
+                                onClick={() => navigate('/subjects')}
+                                className="flex items-center px-3 py-1.5 bg-white border border-amber-200 hover:border-amber-300 hover:bg-amber-100 rounded-lg text-sm font-medium text-amber-800 transition-colors shadow-sm active:scale-95"
+                                title="Click to view all subjects"
+                            >
+                                <span className="truncate max-w-[150px]">{item.title}</span>
+                                <span className="ml-2 px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-xs whitespace-nowrap">
+                                    {item.days_since_last_activity} days idle
+                               </span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Top Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
