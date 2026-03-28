@@ -48,7 +48,11 @@ def register_user(
             status_code=400,
             detail="Email already registered",
         )
-
+    if len(payload.password)<8:
+        raise HTTPException(
+            status_code=400,
+            detail="Password must be at least of 8 characters"
+        )
     user = models.User(
         email=payload.email,
         password_hash=hash_password(payload.password),
