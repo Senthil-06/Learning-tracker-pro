@@ -216,7 +216,7 @@ export default function Dashboard() {
                                  </PieChart>
                             </ResponsiveContainer>
                         <div className="ml-4 space-y-2">
-                        {subjects.filter(entry=>entry.total_minutes>0).map((entry, index) => (
+                        {subjects.filter(entry=>entry.total_minutes>0).slice(0, 10).map((entry, index) => (
                             <div key={entry.subject} className="flex items-center text-sm">  {/* fix 3 */}
                                 <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
                                 <span className="text-slate-600">{entry.subject}</span>  {/* fix 2 */}

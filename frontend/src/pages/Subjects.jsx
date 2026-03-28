@@ -28,6 +28,9 @@ export default function Subjects() {
     // Deletion Modal State
     const [itemToDelete, setItemToDelete] = useState(null);
 
+    // In-Place Celebration State
+    const [showCelebration, setShowCelebration] = useState(false);
+
     // Track Session Form inside Drawer
     const [duration, setDuration] = useState("");
     const [notes, setNotes] = useState("");
@@ -191,7 +194,9 @@ export default function Subjects() {
             if (tickedCount === 10 && selectedItem.status !== "completed") {
                 await api.patch(`/learning-items/${selectedItem.id}`, { status: "completed" });
                 fetchItems();
-                navigate('/celebration', { state: { subjectName: selectedItem.title } });
+                closeDrawer();
+                setShowCelebration(true);
+                setTimeout(() => setShowCelebration(false), 2500);
             } else {
                 fetchItems(); // Silently sync real data
             }
@@ -558,6 +563,32 @@ export default function Subjects() {
                     </div>
                 </div>
             )}
+
+            {/* --- IN-PLACE CELEBRATION OVERLAY --- */}
+{showCelebration && (
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+        <div className="flex flex-col items-center justify-center">
+
+            {/* Circle + ripple */}
+            <div className="relative w-24 h-24 mb-6">
+                {/* ripple ring behind the circle */}
+                <div className="absolute inset-0 rounded-full bg-emerald-500 animate-ripple" />
+                {/* main circle — bounce in */}
+                <div className="absolute inset-2 bg-emerald-500 rounded-full flex items-center justify-center animate-scale-in">
+                    <CheckCircle2 className="w-12 h-12 text-white" />
+                </div>
+            </div>
+
+            {/* Title — fades up after circle lands */}
+            <h2 style={{ animationDelay: '350ms' }} className="text-3xl font-bold text-white tracking-wide opacity-0 animate-fade-up">
+                Subject completed! 🎉
+            </h2>
+
+
+
+        </div>
+    </div>
+)}
         </div>
     );
 }
