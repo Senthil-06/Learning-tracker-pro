@@ -10,7 +10,6 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Subjects from './pages/Subjects';
 import Profile from './pages/Profile';
-import Celebration from './pages/Celebration';
 import { Toaster } from 'react-hot-toast';
 
 const PrivateRoute = () => {
@@ -112,7 +111,6 @@ function App() {
           <Route path="/register" element={<Register />} />
 
           <Route element={<PrivateRoute />}>
-            <Route path="/celebration" element={<Celebration />} />
             <Route element={<Layout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/subjects" element={<Subjects />} />
