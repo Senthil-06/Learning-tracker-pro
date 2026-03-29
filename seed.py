@@ -9,7 +9,7 @@ db: Session = SessionLocal()
 
 # ----- USER -----
 user = models.User(
-    email="chief1@test.com",
+    email="chief@test.com",
     password_hash=hash_password("password123"),
 )
 
@@ -50,7 +50,7 @@ items = [
         title="Software construction",
         subject_code="CS23433",
         difficulty=DifficultyLevel.Medium,
-        status="completed",
+        status="planned",
         created_at=now - timedelta(days=40),
     ),
     models.LearningItem(

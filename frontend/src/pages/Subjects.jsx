@@ -179,18 +179,30 @@ export default function Subjects() {
             ? { two_marks_completed: !currentValue } 
             : { eleven_marks_completed: !currentValue };
             
+        // 1. Calculate the hypothetical future state entirely in memory
+        const updatedUnits = selectedItem.units.map(u => 
+            u.id === unitId ? { ...u, ...payload } : u
+        );
+        const tickedCount = updatedUnits.reduce((acc, u) => acc + (u.two_marks_completed ? 1 : 0) + (u.eleven_marks_completed ? 1 : 0), 0);
+
+        // 2. The Strict Validation Guard 
+        // If they click the 10th box but haven't studied for at least 1 minute, block it.
+        if (tickedCount === 10 && (!selectedItem.total_minutes || selectedItem.total_minutes === 0)) {
+            toast.error("You must log at least 1 minute of study time before mastering this subject!", { 
+                duration: 4000,
+                icon: '⚠️',
+            });
+            return; // Kill the action immediately!
+        }
+
         try {
-            // Optimistic update for incredibly satisfying UX
-            const updatedUnits = selectedItem.units.map(u => 
-                u.id === unitId ? { ...u, ...payload } : u
-            );
+            // 3. Optimistic update safely proceeds for satisfying UX
             setSelectedItem({...selectedItem, units: updatedUnits});
 
             // Fire to backend
             await api.patch(`/learning-items/${selectedItem.id}/units/${unitNumber}`, payload);
             
-            // Check for Auto-Completion
-            const tickedCount = updatedUnits.reduce((acc, u) => acc + (u.two_marks_completed ? 1 : 0) + (u.eleven_marks_completed ? 1 : 0), 0);
+            // 4. Check for Auto-Completion Server Sync
             if (tickedCount === 10 && selectedItem.status !== "completed") {
                 await api.patch(`/learning-items/${selectedItem.id}`, { status: "completed" });
                 fetchItems();
