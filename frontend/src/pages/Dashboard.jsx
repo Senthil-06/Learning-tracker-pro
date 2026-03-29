@@ -114,7 +114,7 @@ export default function Dashboard() {
         <div className="space-y-6">
             <div>
                 <h2 className="text-2xl font-bold text-slate-900">Dashboard</h2>
-                <p className="text-slate-500">Track your learning progress and study habits</p>
+                <p className="text-slate-500">Analytics</p>
             </div>
 
             {/* Dropoff Warning Banner */}
@@ -246,7 +246,7 @@ export default function Dashboard() {
             {/* Recent Activity / Ongoing Items */}
             <Card>
                 <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-semibold text-slate-900">Recent Learning Items</h3>
+                    <h3 className="font-semibold text-slate-900">Recent Subjects</h3>
                     {/* <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">View All</button> */}
                 </div>
                 <div className="space-y-4">
