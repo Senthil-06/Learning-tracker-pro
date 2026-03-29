@@ -122,7 +122,7 @@ export default function Subjects() {
                 if (created) openDrawer(created);
             }, 300);
         } catch (err) {
-            toast.error(err.response?.data?.detail || "Failed to create subject. Ensure the title is unique.");
+            toast.error(err.response?.data?.detail || "Failed to create subject. Ensure the title and subject code is unique.");
         } finally {
             setFormSubmitting(false);
         }
