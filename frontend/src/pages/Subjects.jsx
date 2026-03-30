@@ -530,7 +530,7 @@ export default function Subjects() {
                                                 unit={unit} 
                                                 editable={activeTab === "ongoing"}
                                                 onToggle={(type, val) => handleToggleUnit(unit.id, unit.unit_number, type, val)}
-                                                onRename={(newName) => handleSaveUnitName(unit.id, unit.unit_number, newName)}
+                                                onRename={(newName) => handleSaveUnitName(unit.unit_number, newName)}
                                             />
                                         ))
                                     )}
