@@ -46,16 +46,17 @@ def weekly_time(
     }
 
     result = []
-    start -= timedelta(days=start.weekday())    #makes sure cursor points to a monday (start of the week)
+# Snap start to its Monday
+    start -= timedelta(days=start.weekday())
     cursor = start.date()
+    end_date = now.date() + timedelta(days=(7 - now.weekday()))  # next Monday
 
-    for _ in range(weeks):
+    while cursor < end_date:
         result.append({
             "week_start": cursor,
             "total_minutes": week_map.get(cursor, 0),
         })
         cursor += timedelta(weeks=1)
-
     return result
 
 @router.get("/streak", response_model= schemas.StreakResponse)
