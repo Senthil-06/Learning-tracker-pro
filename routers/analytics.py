@@ -45,13 +45,13 @@ def weekly_time(
         row.week.date(): row.total_minutes for row in rows
     }
 
-    result = []
-# Snap start to its Monday
-    start -= timedelta(days=start.weekday())
-    cursor = start.date()
-    end_date = now.date() + timedelta(days=(7 - now.weekday()))  # next Monday
+    # Start from (weeks) Mondays ago relative to this Monday
+    this_monday = now.date() - timedelta(days=now.weekday())
+    start_monday = this_monday - timedelta(weeks=weeks - 1)
 
-    while cursor < end_date:
+    result = []
+    cursor = start_monday
+    for _ in range(weeks):
         result.append({
             "week_start": cursor,
             "total_minutes": week_map.get(cursor, 0),
