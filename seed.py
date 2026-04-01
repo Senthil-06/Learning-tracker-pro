@@ -9,7 +9,7 @@ db: Session = SessionLocal()
 
 # ----- USER -----
 user = models.User(
-    email="chief2@test.com",
+    email="chief3@test.com",
     password_hash=hash_password("password"),
 )
 

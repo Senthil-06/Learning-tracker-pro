@@ -109,6 +109,7 @@ export default function Dashboard() {
 
     // Sort recently active items
     const recentItems = [...ongoingItems].sort((a, b) => new Date(b.last_activity) - new Date(a.last_activity));
+    const filteredSubjects = subjects.filter(entry => entry.total_minutes > 0).slice(0, 10);
 
     return (
         <div className="space-y-6">
@@ -216,7 +217,7 @@ export default function Dashboard() {
                             <ResponsiveContainer width="60%" height="100%">
                                 <PieChart>
                                     <Pie
-                                        data={subjects}
+                                        data={filteredSubjects}
                                         cx="50%"
                                         cy="50%"
                                         innerRadius={60}
@@ -224,7 +225,7 @@ export default function Dashboard() {
                                         dataKey="total_minutes"
                                         nameKey="subject"
                                     >
-                                    {subjects.map((entry, index) => (
+                                    {filteredSubjects.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                     </Pie>
