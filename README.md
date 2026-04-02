@@ -2,7 +2,6 @@
 
 A meticulously designed, full-stack productivity and learning management application built to effortlessly track syllabus progress, monitor study analytics, and gamify the learning experience.
 
-![Dashboard Preview](https://via.placeholder.com/800x400?text=Premium+Learning+Dashboard)
 
 ## 🚀 The Tech Stack
 
